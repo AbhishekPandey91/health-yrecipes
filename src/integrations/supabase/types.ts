@@ -9,7 +9,105 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          age: number | null
+          allergies: string[] | null
+          created_at: string
+          cuisine_type: string | null
+          deficiencies: string[] | null
+          health_goals: string | null
+          height: string | null
+          id: string
+          name: string | null
+          preferences: string[] | null
+          skill_level: string | null
+          updated_at: string
+          weight: string | null
+        }
+        Insert: {
+          age?: number | null
+          allergies?: string[] | null
+          created_at?: string
+          cuisine_type?: string | null
+          deficiencies?: string[] | null
+          health_goals?: string | null
+          height?: string | null
+          id: string
+          name?: string | null
+          preferences?: string[] | null
+          skill_level?: string | null
+          updated_at?: string
+          weight?: string | null
+        }
+        Update: {
+          age?: number | null
+          allergies?: string[] | null
+          created_at?: string
+          cuisine_type?: string | null
+          deficiencies?: string[] | null
+          health_goals?: string | null
+          height?: string | null
+          id?: string
+          name?: string | null
+          preferences?: string[] | null
+          skill_level?: string | null
+          updated_at?: string
+          weight?: string | null
+        }
+        Relationships: []
+      }
+      recipes: {
+        Row: {
+          calories: number | null
+          created_at: string
+          description: string | null
+          difficulty: string | null
+          id: string
+          ingredients: string[] | null
+          instructions: string[] | null
+          nutritional_info: Json | null
+          prep_time: string | null
+          servings: number | null
+          title: string
+          updated_at: string
+          user_id: string
+          youtube_link: string | null
+        }
+        Insert: {
+          calories?: number | null
+          created_at?: string
+          description?: string | null
+          difficulty?: string | null
+          id?: string
+          ingredients?: string[] | null
+          instructions?: string[] | null
+          nutritional_info?: Json | null
+          prep_time?: string | null
+          servings?: number | null
+          title: string
+          updated_at?: string
+          user_id: string
+          youtube_link?: string | null
+        }
+        Update: {
+          calories?: number | null
+          created_at?: string
+          description?: string | null
+          difficulty?: string | null
+          id?: string
+          ingredients?: string[] | null
+          instructions?: string[] | null
+          nutritional_info?: Json | null
+          prep_time?: string | null
+          servings?: number | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          youtube_link?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

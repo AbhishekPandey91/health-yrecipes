@@ -1,27 +1,32 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { User, Session } from '@supabase/supabase-js';
 
-interface User {
+interface UserProfile {
   id: string;
   name: string;
   email: string;
   age?: number;
   height?: string;
   weight?: string;
-  healthGoals?: string;
+  health_goals?: string;
   preferences?: string[];
   allergies?: string[];
   deficiencies?: string[];
-  cuisineType?: string;
-  skillLevel?: string;
+  cuisine_type?: string;
+  skill_level?: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (userData: any) => Promise<void>;
-  signOut: () => void;
-  updateUser: (userData: Partial<User>) => void;
+  profile: UserProfile | null;
+  session: Session | null;
+  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, userData: any) => Promise<{ error: any }>;
+  signInWithGoogle: () => Promise<{ error: any }>;
+  signOut: () => Promise<void>;
+  updateProfile: (profileData: Partial<UserProfile>) => Promise<{ error: any }>;
   isLoading: boolean;
 }
 
@@ -37,81 +42,151 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Demo user for testing - in real app this would come from Supabase
-  const demoUser: User = {
-    id: '1',
-    name: 'Alex Thompson',
-    email: 'alex@example.com',
-    age: 30,
-    height: "5'8\"",
-    weight: '160 lbs',
-    healthGoals: 'Weight loss and muscle gain',
-    preferences: ['chicken', 'pasta', 'vegetables'],
-    allergies: ['peanuts'],
-    deficiencies: ['iron'],
-    cuisineType: 'Italian',
-    skillLevel: 'intermediate'
-  };
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in (in real app, check Supabase session)
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id);
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Fetch user profile
+          setTimeout(async () => {
+            await fetchUserProfile(session.user.id);
+          }, 0);
+        } else {
+          setProfile(null);
+        }
+        setIsLoading(false);
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      }
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+
+      if (data) {
+        setProfile({
+          id: data.id,
+          name: data.name || '',
+          email: user?.email || '',
+          age: data.age,
+          height: data.height,
+          weight: data.weight,
+          health_goals: data.health_goals,
+          preferences: data.preferences || [],
+          allergies: data.allergies || [],
+          deficiencies: data.deficiencies || [],
+          cuisine_type: data.cuisine_type,
+          skill_level: data.skill_level
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
 
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
-    try {
-      // Simulate API call - in real app, use Supabase auth
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setUser(demoUser);
-      localStorage.setItem('user', JSON.stringify(demoUser));
-    } catch (error) {
-      throw new Error('Invalid credentials');
-    } finally {
-      setIsLoading(false);
-    }
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    setIsLoading(false);
+    return { error };
   };
 
-  const signUp = async (userData: any) => {
+  const signUp = async (email: string, password: string, userData: any) => {
     setIsLoading(true);
-    try {
-      // Simulate API call - in real app, use Supabase auth
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const newUser = { ...demoUser, ...userData, id: Math.random().toString() };
-      setUser(newUser);
-      localStorage.setItem('user', JSON.stringify(newUser));
-    } catch (error) {
-      throw new Error('Failed to create account');
-    } finally {
-      setIsLoading(false);
-    }
+    const redirectUrl = `${window.location.origin}/`;
+    
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: redirectUrl,
+        data: {
+          name: userData.name
+        }
+      }
+    });
+    setIsLoading(false);
+    return { error };
   };
 
-  const signOut = () => {
-    setUser(null);
-    localStorage.removeItem('user');
+  const signInWithGoogle = async () => {
+    setIsLoading(true);
+    const redirectUrl = `${window.location.origin}/`;
+    
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: redirectUrl
+      }
+    });
+    setIsLoading(false);
+    return { error };
   };
 
-  const updateUser = (userData: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...userData };
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+  const signOut = async () => {
+    await supabase.auth.signOut();
+  };
+
+  const updateProfile = async (profileData: Partial<UserProfile>) => {
+    if (!user) return { error: new Error('No user logged in') };
+
+    const { error } = await supabase
+      .from('profiles')
+      .upsert({
+        id: user.id,
+        ...profileData,
+        updated_at: new Date().toISOString()
+      });
+
+    if (!error) {
+      setProfile(prev => prev ? { ...prev, ...profileData } : null);
     }
+
+    return { error };
   };
 
   return (
     <AuthContext.Provider value={{
       user,
+      profile,
+      session,
       signIn,
       signUp,
+      signInWithGoogle,
       signOut,
-      updateUser,
+      updateProfile,
       isLoading
     }}>
       {children}

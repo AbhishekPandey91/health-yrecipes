@@ -12,18 +12,28 @@ import { toast } from 'sonner';
 const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { signIn, isLoading } = useAuth();
+  const { signIn, signInWithGoogle, isLoading } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      await signIn(email, password);
+    const { error } = await signIn(email, password);
+    
+    if (error) {
+      toast.error('Invalid email or password. Please try again.');
+    } else {
       toast.success('Welcome back!');
       navigate('/');
-    } catch (error) {
-      toast.error('Invalid email or password. Please try again.');
     }
+  };
+
+  const handleGoogleSignIn = async () => {
+    const { error } = await signInWithGoogle();
+    
+    if (error) {
+      toast.error('Google sign-in failed. Please try again.');
+    }
+    // Success will be handled by the auth state change
   };
 
   return (
@@ -97,7 +107,13 @@ const SignIn = () => {
               </div>
             </div>
             
-            <Button variant="outline" className="w-full mt-4" type="button">
+            <Button 
+              variant="outline" 
+              className="w-full mt-4" 
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={isLoading}
+            >
               <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
