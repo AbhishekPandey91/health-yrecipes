@@ -1,236 +1,200 @@
+
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { ChefHat } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Onboarding = () => {
-  const [preferences, setPreferences] = useState({
-    likes: '',
-    dislikes: '',
-    allergies: [] as string[],
-    customAllergy: '',
-    deficiencies: [] as string[],
-    customDeficiency: '',
-    cuisineType: '',
-    skillLevel: ''
-  });
-  
-  const { updateProfile } = useAuth();
+  const { user, updateProfile } = useAuth();
   const navigate = useNavigate();
+  const [isUpdating, setIsUpdating] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    preferences: [] as string[],
+    allergies: [] as string[],
+    deficiencies: [] as string[],
+    cuisine_type: '',
+    skill_level: ''
+  });
 
-  const commonAllergies = [
-    'Peanuts', 'Tree Nuts', 'Dairy', 'Eggs', 'Soy', 'Wheat/Gluten', 
-    'Fish', 'Shellfish', 'Sesame'
+  if (!user) {
+    return <Navigate to="/signin" replace />;
+  }
+
+  const preferenceOptions = [
+    'Vegetables', 'Fruits', 'Grains', 'Protein', 'Dairy', 'Nuts', 'Fish', 'Chicken', 'Beef', 'Vegetarian', 'Vegan'
   ];
 
-  const commonDeficiencies = [
-    'Iron', 'Vitamin D', 'Vitamin B12', 'Calcium', 'Magnesium', 
-    'Omega-3', 'Vitamin C', 'Zinc'
+  const allergyOptions = [
+    'Nuts', 'Dairy', 'Gluten', 'Shellfish', 'Eggs', 'Soy', 'Fish', 'Sesame'
   ];
 
-  const cuisineTypes = [
-    'Italian', 'Mexican', 'Indian', 'Mediterranean', 'Asian', 
-    'American', 'French', 'Greek', 'Thai', 'Middle Eastern'
+  const deficiencyOptions = [
+    'Iron', 'Vitamin D', 'Vitamin B12', 'Calcium', 'Protein', 'Fiber', 'Omega-3'
   ];
 
-  const skillLevels = [
-    { value: 'beginner', label: 'Beginner - Simple, quick recipes' },
-    { value: 'intermediate', label: 'Intermediate - Moderate complexity' },
-    { value: 'advanced', label: 'Advanced - Complex techniques' }
-  ];
-
-  const handleAllergyChange = (allergy: string, checked: boolean) => {
-    setPreferences(prev => ({
+  const handleCheckboxChange = (field: 'preferences' | 'allergies' | 'deficiencies', value: string, checked: boolean) => {
+    setFormData(prev => ({
       ...prev,
-      allergies: checked 
-        ? [...prev.allergies, allergy]
-        : prev.allergies.filter(a => a !== allergy)
-    }));
-  };
-
-  const handleDeficiencyChange = (deficiency: string, checked: boolean) => {
-    setPreferences(prev => ({
-      ...prev,
-      deficiencies: checked 
-        ? [...prev.deficiencies, deficiency]
-        : prev.deficiencies.filter(d => d !== deficiency)
+      [field]: checked 
+        ? [...prev[field], value]
+        : prev[field].filter(item => item !== value)
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsUpdating(true);
     
-    // Combine allergies and deficiencies with custom entries
-    const finalAllergies = [...preferences.allergies];
-    if (preferences.customAllergy.trim()) {
-      finalAllergies.push(preferences.customAllergy.trim());
-    }
-    
-    const finalDeficiencies = [...preferences.deficiencies];
-    if (preferences.customDeficiency.trim()) {
-      finalDeficiencies.push(preferences.customDeficiency.trim());
-    }
+    try {
+      const { error } = await updateProfile({
+        preferences: formData.preferences,
+        allergies: formData.allergies,
+        deficiencies: formData.deficiencies,
+        cuisine_type: formData.cuisine_type,
+        skill_level: formData.skill_level
+      });
 
-    const profileData = {
-      preferences: preferences.likes.split(',').map(p => p.trim()).filter(p => p),
-      allergies: finalAllergies,
-      deficiencies: finalDeficiencies,
-      cuisine_type: preferences.cuisineType,
-      skill_level: preferences.skillLevel
-    };
-
-    const { error } = await updateProfile(profileData);
-    
-    if (error) {
+      if (error) {
+        toast.error('Failed to save preferences. Please try again.');
+      } else {
+        toast.success('Preferences saved successfully!');
+        navigate('/');
+      }
+    } catch (error) {
       toast.error('Failed to save preferences. Please try again.');
-    } else {
-      toast.success('Preferences saved successfully!');
-      navigate('/');
+    } finally {
+      setIsUpdating(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-orange-50 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-orange-50 p-4">
       <div className="max-w-2xl mx-auto">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center justify-center space-x-2">
+            <ChefHat className="w-8 h-8 text-green-600" />
+            <span>Complete Your Profile</span>
+          </h1>
+          <p className="text-gray-600">Tell us about your food preferences to get personalized recipes</p>
+        </div>
+
         <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold text-gray-900">Tell Us About Your Preferences</CardTitle>
-            <CardDescription className="text-lg">
-              Help us personalize your recipe recommendations by sharing your dietary preferences and health needs.
+          <CardHeader>
+            <CardTitle>Food Preferences & Health Goals</CardTitle>
+            <CardDescription>
+              This information helps us generate recipes tailored to your needs
             </CardDescription>
           </CardHeader>
           
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Food Preferences */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Food Preferences</h3>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="likes">Foods You Love</Label>
-                  <Textarea
-                    id="likes"
-                    placeholder="e.g., chicken, pasta, vegetables, salmon (separate with commas)"
-                    value={preferences.likes}
-                    onChange={(e) => setPreferences(prev => ({ ...prev, likes: e.target.value }))}
-                    className="min-h-[80px]"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="dislikes">Foods You Dislike</Label>
-                  <Textarea
-                    id="dislikes"
-                    placeholder="e.g., fish, broccoli, spicy food (separate with commas)"
-                    value={preferences.dislikes}
-                    onChange={(e) => setPreferences(prev => ({ ...prev, dislikes: e.target.value }))}
-                    className="min-h-[80px]"
-                  />
-                </div>
-              </div>
-
-              {/* Allergies */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Allergies & Dietary Restrictions</h3>
+              <div className="space-y-3">
+                <Label className="text-base font-medium">Food Preferences</Label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {commonAllergies.map((allergy) => (
-                    <div key={allergy} className="flex items-center space-x-2">
+                  {preferenceOptions.map((option) => (
+                    <div key={option} className="flex items-center space-x-2">
                       <Checkbox
-                        id={allergy}
-                        checked={preferences.allergies.includes(allergy)}
-                        onCheckedChange={(checked) => handleAllergyChange(allergy, checked as boolean)}
+                        id={`pref-${option}`}
+                        checked={formData.preferences.includes(option)}
+                        onCheckedChange={(checked) => 
+                          handleCheckboxChange('preferences', option, !!checked)
+                        }
                       />
-                      <Label htmlFor={allergy} className="text-sm">{allergy}</Label>
+                      <Label htmlFor={`pref-${option}`} className="text-sm">{option}</Label>
                     </div>
                   ))}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="customAllergy">Other Allergies</Label>
-                  <Input
-                    id="customAllergy"
-                    placeholder="Enter any other allergies"
-                    value={preferences.customAllergy}
-                    onChange={(e) => setPreferences(prev => ({ ...prev, customAllergy: e.target.value }))}
-                  />
-                </div>
               </div>
 
-              {/* Nutritional Deficiencies */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Nutritional Needs</h3>
-                <p className="text-sm text-gray-600">
-                  Select any nutrients you'd like to focus on in your recipes.
-                </p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {commonDeficiencies.map((deficiency) => (
-                    <div key={deficiency} className="flex items-center space-x-2">
+              <div className="space-y-3">
+                <Label className="text-base font-medium">Allergies & Restrictions</Label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {allergyOptions.map((option) => (
+                    <div key={option} className="flex items-center space-x-2">
                       <Checkbox
-                        id={deficiency}
-                        checked={preferences.deficiencies.includes(deficiency)}
-                        onCheckedChange={(checked) => handleDeficiencyChange(deficiency, checked as boolean)}
+                        id={`allergy-${option}`}
+                        checked={formData.allergies.includes(option)}
+                        onCheckedChange={(checked) => 
+                          handleCheckboxChange('allergies', option, !!checked)
+                        }
                       />
-                      <Label htmlFor={deficiency} className="text-sm">{deficiency}</Label>
+                      <Label htmlFor={`allergy-${option}`} className="text-sm">{option}</Label>
                     </div>
                   ))}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="customDeficiency">Other Nutritional Focus</Label>
-                  <Input
-                    id="customDeficiency"
-                    placeholder="e.g., Protein, Fiber"
-                    value={preferences.customDeficiency}
-                    onChange={(e) => setPreferences(prev => ({ ...prev, customDeficiency: e.target.value }))}
-                  />
-                </div>
               </div>
 
-              {/* Cuisine & Skill */}
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <Label className="text-base font-medium">Nutritional Deficiencies</Label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {deficiencyOptions.map((option) => (
+                    <div key={option} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`deficiency-${option}`}
+                        checked={formData.deficiencies.includes(option)}
+                        onCheckedChange={(checked) => 
+                          handleCheckboxChange('deficiencies', option, !!checked)
+                        }
+                      />
+                      <Label htmlFor={`deficiency-${option}`} className="text-sm">{option}</Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="cuisine">Preferred Cuisine</Label>
-                  <Select onValueChange={(value) => setPreferences(prev => ({ ...prev, cuisineType: value }))}>
+                  <Label htmlFor="cuisine_type">Preferred Cuisine</Label>
+                  <Select 
+                    value={formData.cuisine_type}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, cuisine_type: value }))}
+                  >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select your favorite cuisine" />
+                      <SelectValue placeholder="Select cuisine" />
                     </SelectTrigger>
                     <SelectContent>
-                      {cuisineTypes.map((cuisine) => (
-                        <SelectItem key={cuisine} value={cuisine.toLowerCase()}>
-                          {cuisine}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="italian">Italian</SelectItem>
+                      <SelectItem value="mexican">Mexican</SelectItem>
+                      <SelectItem value="indian">Indian</SelectItem>
+                      <SelectItem value="mediterranean">Mediterranean</SelectItem>
+                      <SelectItem value="asian">Asian</SelectItem>
+                      <SelectItem value="american">American</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="skill">Cooking Skill Level</Label>
-                  <Select onValueChange={(value) => setPreferences(prev => ({ ...prev, skillLevel: value }))}>
+                  <Label htmlFor="skill_level">Cooking Skill Level</Label>
+                  <Select 
+                    value={formData.skill_level}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, skill_level: value }))}
+                  >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select your skill level" />
+                      <SelectValue placeholder="Select skill level" />
                     </SelectTrigger>
                     <SelectContent>
-                      {skillLevels.map((skill) => (
-                        <SelectItem key={skill.value} value={skill.value}>
-                          {skill.label}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="beginner">Beginner</SelectItem>
+                      <SelectItem value="intermediate">Intermediate</SelectItem>
+                      <SelectItem value="advanced">Advanced</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
-
+              
               <Button 
                 type="submit" 
-                className="w-full bg-green-600 hover:bg-green-700 text-lg py-3"
+                className="w-full bg-green-600 hover:bg-green-700"
+                disabled={isUpdating}
               >
-                Save Preferences & Continue
+                {isUpdating ? 'Saving...' : 'Save Preferences & Start Cooking'}
               </Button>
             </form>
           </CardContent>
