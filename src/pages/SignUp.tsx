@@ -106,7 +106,7 @@ const SignUp = () => {
                 <Input
                   id="height"
                   type="text"
-                  placeholder="5'8\""
+                  placeholder="5'8&quot;"
                   value={formData.height}
                   onChange={(e) => handleInputChange('height', e.target.value)}
                 />
