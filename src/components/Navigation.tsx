@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Home, Plus, BookOpen, User, LogIn, LogOut } from 'lucide-react';
 
 const Navigation = () => {
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const location = useLocation();
 
   const navItems = [
@@ -55,7 +55,7 @@ const Navigation = () => {
             {user ? (
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-gray-700 hidden sm:block">
-                  Welcome, {user.name.split(' ')[0]}!
+                  Welcome, {profile?.name?.split(' ')[0] || 'User'}!
                 </span>
                 <Button
                   onClick={signOut}

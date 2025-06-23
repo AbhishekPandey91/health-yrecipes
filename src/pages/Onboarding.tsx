@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -23,7 +22,7 @@ const Onboarding = () => {
     skillLevel: ''
   });
   
-  const { updateUser } = useAuth();
+  const { updateProfile } = useAuth();
   const navigate = useNavigate();
 
   const commonAllergies = [
@@ -79,18 +78,22 @@ const Onboarding = () => {
       finalDeficiencies.push(preferences.customDeficiency.trim());
     }
 
-    const userData = {
+    const profileData = {
       preferences: preferences.likes.split(',').map(p => p.trim()).filter(p => p),
-      dislikes: preferences.dislikes.split(',').map(p => p.trim()).filter(p => p),
       allergies: finalAllergies,
       deficiencies: finalDeficiencies,
-      cuisineType: preferences.cuisineType,
-      skillLevel: preferences.skillLevel
+      cuisine_type: preferences.cuisineType,
+      skill_level: preferences.skillLevel
     };
 
-    updateUser(userData);
-    toast.success('Preferences saved successfully!');
-    navigate('/');
+    const { error } = await updateProfile(profileData);
+    
+    if (error) {
+      toast.error('Failed to save preferences. Please try again.');
+    } else {
+      toast.success('Preferences saved successfully!');
+      navigate('/');
+    }
   };
 
   return (

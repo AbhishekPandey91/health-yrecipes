@@ -11,13 +11,13 @@ import { Loader2, ChefHat } from 'lucide-react';
 import { toast } from 'sonner';
 
 const GenerateRecipe = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [isGenerating, setIsGenerating] = useState(false);
   const [preferences, setPreferences] = useState({
     mealType: '',
     cookingTime: '',
-    cuisineType: user?.cuisineType || '',
-    skillLevel: user?.skillLevel || ''
+    cuisineType: profile?.cuisine_type || '',
+    skillLevel: profile?.skill_level || ''
   });
 
   if (!user) {
@@ -27,7 +27,7 @@ const GenerateRecipe = () => {
   const handleGenerate = async () => {
     setIsGenerating(true);
     try {
-      // Simulate API call - in real app, this would call OpenAI
+      // Simulate API call - in real app, this would call Hugging Face API
       await new Promise(resolve => setTimeout(resolve, 2000));
       toast.success('Recipe generated successfully!');
     } catch (error) {

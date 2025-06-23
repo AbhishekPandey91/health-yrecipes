@@ -21,17 +21,35 @@ const SignUp = () => {
     healthGoals: ''
   });
   
-  const { signUp, isLoading } = useAuth();
+  const { signUp, signInWithGoogle, isLoading } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await signUp(formData);
-      toast.success('Account created successfully!');
-      navigate('/onboarding');
+      const { error } = await signUp(formData.email, formData.password, {
+        name: formData.name,
+        age: formData.age ? parseInt(formData.age) : undefined,
+        height: formData.height,
+        weight: formData.weight,
+        health_goals: formData.healthGoals
+      });
+      
+      if (error) {
+        toast.error(error.message || 'Failed to create account. Please try again.');
+      } else {
+        toast.success('Account created successfully!');
+        navigate('/onboarding');
+      }
     } catch (error) {
       toast.error('Failed to create account. Please try again.');
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    const { error } = await signInWithGoogle();
+    if (error) {
+      toast.error('Failed to sign in with Google. Please try again.');
     }
   };
 
@@ -167,7 +185,13 @@ const SignUp = () => {
           </div>
           
           <div className="mt-4">
-            <Button variant="outline" className="w-full" type="button">
+            <Button 
+              variant="outline" 
+              className="w-full" 
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={isLoading}
+            >
               <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>

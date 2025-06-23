@@ -11,19 +11,19 @@ import { User, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Profile = () => {
-  const { user, updateUser, signOut } = useAuth();
+  const { user, profile, updateProfile, signOut } = useAuth();
   const navigate = useNavigate();
   const [isUpdating, setIsUpdating] = useState(false);
   
   const [formData, setFormData] = useState({
-    name: user?.name || '',
+    name: profile?.name || '',
     email: user?.email || '',
-    age: user?.age?.toString() || '',
-    height: user?.height || '',
-    weight: user?.weight || '',
-    healthGoals: user?.healthGoals || '',
-    cuisineType: user?.cuisineType || '',
-    skillLevel: user?.skillLevel || ''
+    age: profile?.age?.toString() || '',
+    height: profile?.height || '',
+    weight: profile?.weight || '',
+    health_goals: profile?.health_goals || '',
+    cuisine_type: profile?.cuisine_type || '',
+    skill_level: profile?.skill_level || ''
   });
 
   if (!user) {
@@ -39,15 +39,21 @@ const Profile = () => {
     setIsUpdating(true);
     
     try {
-      // Simulate API call - in real app, this would update Supabase
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      updateUser({
-        ...formData,
-        age: formData.age ? parseInt(formData.age) : undefined
+      const { error } = await updateProfile({
+        name: formData.name,
+        age: formData.age ? parseInt(formData.age) : undefined,
+        height: formData.height,
+        weight: formData.weight,
+        health_goals: formData.health_goals,
+        cuisine_type: formData.cuisine_type,
+        skill_level: formData.skill_level
       });
-      
-      toast.success('Profile updated successfully!');
+
+      if (error) {
+        toast.error('Failed to update profile. Please try again.');
+      } else {
+        toast.success('Profile updated successfully!');
+      }
     } catch (error) {
       toast.error('Failed to update profile. Please try again.');
     } finally {
@@ -99,8 +105,8 @@ const Profile = () => {
                   id="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  required
+                  disabled
+                  className="bg-gray-100"
                 />
               </div>
               
@@ -141,10 +147,10 @@ const Profile = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="healthGoals">Health Goals</Label>
+                <Label htmlFor="health_goals">Health Goals</Label>
                 <Select 
-                  value={formData.healthGoals}
-                  onValueChange={(value) => handleInputChange('healthGoals', value)}
+                  value={formData.health_goals}
+                  onValueChange={(value) => handleInputChange('health_goals', value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select your primary health goal" />
@@ -162,10 +168,10 @@ const Profile = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="cuisineType">Preferred Cuisine</Label>
+                  <Label htmlFor="cuisine_type">Preferred Cuisine</Label>
                   <Select 
-                    value={formData.cuisineType}
-                    onValueChange={(value) => handleInputChange('cuisineType', value)}
+                    value={formData.cuisine_type}
+                    onValueChange={(value) => handleInputChange('cuisine_type', value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select cuisine" />
@@ -182,10 +188,10 @@ const Profile = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="skillLevel">Cooking Skill Level</Label>
+                  <Label htmlFor="skill_level">Cooking Skill Level</Label>
                   <Select 
-                    value={formData.skillLevel}
-                    onValueChange={(value) => handleInputChange('skillLevel', value)}
+                    value={formData.skill_level}
+                    onValueChange={(value) => handleInputChange('skill_level', value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select skill level" />
