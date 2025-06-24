@@ -1,112 +1,133 @@
 
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { Home, Plus, BookOpen, User, LogIn, LogOut } from 'lucide-react';
+import { ChefHat, Home, BookOpen, User, LogIn, LogOut, Utensils } from 'lucide-react';
+import { toast } from 'sonner';
 
 const Navigation = () => {
-  const { user, profile, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
-  const navItems = [
-    { path: '/', label: 'Home', icon: Home },
-    { path: '/generate', label: 'Generate Recipe', icon: Plus, requireAuth: true },
-    { path: '/saved', label: 'Saved Recipes', icon: BookOpen, requireAuth: true },
-    { path: '/profile', label: 'Profile', icon: User, requireAuth: true },
-  ];
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+    toast.success('Signed out successfully!');
+  };
 
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="bg-white shadow-sm border-b border-green-100">
+    <nav className="bg-white/90 backdrop-blur-lg shadow-xl border-b border-green-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">HR</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">HealthyRecipes</span>
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <Link 
+            to="/" 
+            className="flex items-center space-x-2 group transform hover:scale-110 transition-all duration-300"
+          >
+            <ChefHat className="w-8 h-8 text-green-600 group-hover:rotate-12 transition-transform duration-300" />
+            <span className="text-xl font-bold bg-gradient-to-r from-green-600 to-orange-600 bg-clip-text text-transparent">
+              HealthyRecipes
+            </span>
+          </Link>
+
+          {/* Navigation Links */}
+          <div className="hidden md:flex items-center space-x-1">
+            <Link to="/">
+              <Button 
+                variant={isActive('/') ? 'default' : 'ghost'}
+                className={`flex items-center space-x-2 transform hover:scale-110 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ${
+                  isActive('/') 
+                    ? 'bg-green-600 hover:bg-green-700 text-white' 
+                    : 'hover:bg-green-50 text-gray-700 hover:text-green-600'
+                }`}
+              >
+                <Home className="w-4 h-4" />
+                <span>Home</span>
+              </Button>
             </Link>
-          </div>
 
-          <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => {
-              if (item.requireAuth && !user) return null;
-              
-              return (
-                <Link
-                  key={item.path}
-                  to={user || !item.requireAuth ? item.path : '/signin'}
-                  className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive(item.path)
-                      ? 'text-green-600 bg-green-50'
-                      : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
-                  }`}
-                >
-                  <item.icon className="w-4 h-4" />
-                  <span>{item.label}</span>
+            {user && (
+              <>
+                <Link to="/generate">
+                  <Button 
+                    variant={isActive('/generate') ? 'default' : 'ghost'}
+                    className={`flex items-center space-x-2 transform hover:scale-110 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ${
+                      isActive('/generate')
+                        ? 'bg-green-600 hover:bg-green-700 text-white'
+                        : 'hover:bg-green-50 text-gray-700 hover:text-green-600'
+                    }`}
+                  >
+                    <Utensils className="w-4 h-4" />
+                    <span>Generate Recipe</span>
+                  </Button>
                 </Link>
-              );
-            })}
+
+                <Link to="/saved">
+                  <Button 
+                    variant={isActive('/saved') ? 'default' : 'ghost'}
+                    className={`flex items-center space-x-2 transform hover:scale-110 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ${
+                      isActive('/saved')
+                        ? 'bg-orange-600 hover:bg-orange-700 text-white'
+                        : 'hover:bg-orange-50 text-gray-700 hover:text-orange-600'
+                    }`}
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    <span>Saved Recipes</span>
+                  </Button>
+                </Link>
+
+                <Link to="/profile">
+                  <Button 
+                    variant={isActive('/profile') ? 'default' : 'ghost'}
+                    className={`flex items-center space-x-2 transform hover:scale-110 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ${
+                      isActive('/profile')
+                        ? 'bg-green-600 hover:bg-green-700 text-white'
+                        : 'hover:bg-green-50 text-gray-700 hover:text-green-600'
+                    }`}
+                  >
+                    <User className="w-4 h-4" />
+                    <span>Profile</span>
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
-          <div className="flex items-center space-x-4">
+          {/* Auth Buttons */}
+          <div className="flex items-center space-x-2">
             {user ? (
-              <div className="flex items-center space-x-3">
-                <span className="text-sm text-gray-700 hidden sm:block">
-                  Welcome, {profile?.name?.split(' ')[0] || 'User'}!
-                </span>
-                <Button
-                  onClick={signOut}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center space-x-1"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span className="hidden sm:block">Sign Out</span>
-                </Button>
-              </div>
+              <Button 
+                onClick={handleSignOut}
+                variant="outline"
+                className="flex items-center space-x-2 border-red-200 text-red-700 hover:bg-red-50 transform hover:scale-110 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Sign Out</span>
+              </Button>
             ) : (
               <div className="flex items-center space-x-2">
                 <Link to="/signin">
-                  <Button variant="outline" size="sm" className="flex items-center space-x-1">
+                  <Button 
+                    variant="outline"
+                    className="flex items-center space-x-2 transform hover:scale-110 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl"
+                  >
                     <LogIn className="w-4 h-4" />
-                    <span>Sign In</span>
+                    <span className="hidden sm:inline">Sign In</span>
                   </Button>
                 </Link>
                 <Link to="/signup">
-                  <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                  <Button 
+                    className="bg-green-600 hover:bg-green-700 transform hover:scale-110 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl"
+                  >
                     Sign Up
                   </Button>
                 </Link>
               </div>
             )}
           </div>
-        </div>
-      </div>
-
-      {/* Mobile Navigation */}
-      <div className="md:hidden border-t border-green-100">
-        <div className="px-2 pt-2 pb-3 space-y-1">
-          {navItems.map((item) => {
-            if (item.requireAuth && !user) return null;
-            
-            return (
-              <Link
-                key={item.path}
-                to={user || !item.requireAuth ? item.path : '/signin'}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                  isActive(item.path)
-                    ? 'text-green-600 bg-green-50'
-                    : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
-                }`}
-              >
-                <item.icon className="w-5 h-5" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
         </div>
       </div>
     </nav>
