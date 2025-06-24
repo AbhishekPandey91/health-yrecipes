@@ -8,7 +8,7 @@ import Navigation from '@/components/Navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Float, Text3D, Sphere, Box } from '@react-three/drei';
+import { OrbitControls, Float, Sphere, Box } from '@react-three/drei';
 
 const FloatingIngredients = () => {
   return (

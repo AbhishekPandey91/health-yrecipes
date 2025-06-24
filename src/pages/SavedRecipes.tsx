@@ -8,7 +8,7 @@ import { BookOpen } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Text3D, Float } from '@react-three/drei';
+import { OrbitControls, Float } from '@react-three/drei';
 
 interface SavedRecipe {
   id: string;
@@ -20,7 +20,7 @@ interface SavedRecipe {
   difficulty: string;
   ingredients: string[];
   instructions: string[];
-  nutritional_info: Record<string, string>;
+  nutritional_info: any;
   youtube_link: string;
 }
 
@@ -63,7 +63,22 @@ const SavedRecipes = () => {
 
       if (error) throw error;
 
-      setRecipes(data || []);
+      // Transform the data to match our interface
+      const transformedRecipes: SavedRecipe[] = (data || []).map(recipe => ({
+        id: recipe.id,
+        title: recipe.title,
+        description: recipe.description,
+        prep_time: recipe.prep_time,
+        servings: recipe.servings,
+        calories: recipe.calories,
+        difficulty: recipe.difficulty,
+        ingredients: recipe.ingredients || [],
+        instructions: recipe.instructions || [],
+        nutritional_info: recipe.nutritional_info || {},
+        youtube_link: recipe.youtube_link
+      }));
+
+      setRecipes(transformedRecipes);
     } catch (error) {
       console.error('Error fetching recipes:', error);
       toast.error('Failed to load saved recipes');
@@ -92,7 +107,6 @@ const SavedRecipes = () => {
 
   const handleTryIt = (recipe: SavedRecipe) => {
     console.log('Opening recipe details:', recipe.title);
-    // In a real app, this would open a detailed recipe view
     toast.info(`Opening ${recipe.title}...`);
   };
 
@@ -152,7 +166,7 @@ const SavedRecipes = () => {
                     servings: recipe.servings,
                     calories: recipe.calories,
                     difficulty: recipe.difficulty,
-                    nutrients: Object.keys(recipe.nutritional_info || {}),
+                    nutrients: typeof recipe.nutritional_info === 'object' ? Object.keys(recipe.nutritional_info || {}) : [],
                     youtubeLink: recipe.youtube_link
                   }}
                   onTryIt={() => handleTryIt(recipe)}
