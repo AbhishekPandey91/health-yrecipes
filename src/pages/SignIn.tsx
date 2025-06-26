@@ -38,9 +38,9 @@ const SignIn = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-orange-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-gray-900">Welcome Back</CardTitle>
+          <CardTitle className="text-2xl font-bold text-gray-900 transform transition-all duration-300 hover:scale-105">Welcome Back</CardTitle>
           <CardDescription>
             Sign in to your HealthyRecipes account
           </CardDescription>
@@ -56,6 +56,7 @@ const SignIn = () => {
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="transform transition-all duration-200 focus:scale-105 focus:shadow-lg"
                 required
               />
             </div>
@@ -68,13 +69,14 @@ const SignIn = () => {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="transform transition-all duration-200 focus:scale-105 focus:shadow-lg"
                 required
               />
             </div>
             
             <Button 
               type="submit" 
-              className="w-full bg-green-600 hover:bg-green-700"
+              className="w-full bg-green-600 hover:bg-green-700 transform transition-all duration-200 hover:scale-105 hover:shadow-lg active:scale-95"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -88,10 +90,19 @@ const SignIn = () => {
             </Button>
           </form>
           
+          <div className="mt-4 text-center">
+            <Link 
+              to="/forgot-password" 
+              className="text-sm text-green-600 hover:text-green-700 hover:underline transform transition-all duration-200 hover:scale-105 inline-block"
+            >
+              Forgot your password?
+            </Link>
+          </div>
+          
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{' '}
-              <Link to="/signup" className="text-green-600 hover:text-green-700 font-medium">
+              <Link to="/signup" className="text-green-600 hover:text-green-700 font-medium transform transition-all duration-200 hover:scale-105 inline-block">
                 Sign up here
               </Link>
             </p>
@@ -109,7 +120,7 @@ const SignIn = () => {
             
             <Button 
               variant="outline" 
-              className="w-full mt-4" 
+              className="w-full mt-4 transform transition-all duration-200 hover:scale-105 hover:shadow-lg active:scale-95" 
               type="button"
               onClick={handleGoogleSignIn}
               disabled={isLoading}
