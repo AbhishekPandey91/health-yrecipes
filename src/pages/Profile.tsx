@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { User, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
+import DeleteAccountDialog from '@/components/DeleteAccountDialog';
 
 const Profile = () => {
   const { user, profile, updateProfile, signOut } = useAuth();
@@ -225,6 +225,27 @@ const Profile = () => {
                 </Button>
               </div>
             </form>
+          </CardContent>
+        </Card>
+
+        {/* Danger Zone */}
+        <Card className="mt-8 border-red-200">
+          <CardHeader>
+            <CardTitle className="text-red-600">Danger Zone</CardTitle>
+            <CardDescription>
+              Irreversible and destructive actions
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
+              <div>
+                <h3 className="font-medium text-red-800">Delete Account</h3>
+                <p className="text-sm text-red-600 mt-1">
+                  Permanently delete your account and all associated data
+                </p>
+              </div>
+              <DeleteAccountDialog />
+            </div>
           </CardContent>
         </Card>
       </div>
