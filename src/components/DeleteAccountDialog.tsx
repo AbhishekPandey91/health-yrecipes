@@ -115,7 +115,7 @@ const DeleteAccountDialog = () => {
               <li>Your account preferences</li>
             </ul>
           </AlertDialogDescription>
-        </AlertDialog Header>
+        </AlertDialogHeader>
         
         <div className="space-y-4">
           <div>
