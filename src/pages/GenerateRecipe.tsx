@@ -9,8 +9,6 @@ import { Navigate } from 'react-router-dom';
 import { Loader2, ChefHat, Clock, Users, Zap, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Float, Sphere, Box, Cylinder } from '@react-three/drei';
 
 interface Recipe {
   title: string;
@@ -24,28 +22,6 @@ interface Recipe {
   nutritional_info: Record<string, string>;
   youtube_link: string;
 }
-
-const FloatingKitchen = () => {
-  return (
-    <group>
-      <Float speed={1.5} rotationIntensity={0.3} floatIntensity={0.8}>
-        <Cylinder args={[0.3, 0.3, 1.2]} position={[-1, 0, 0]} rotation={[0, 0, Math.PI / 6]}>
-          <meshStandardMaterial color="#fbbf24" />
-        </Cylinder>
-      </Float>
-      <Float speed={2} rotationIntensity={0.5} floatIntensity={1.2}>
-        <Sphere args={[0.4]} position={[1, 1, 0]}>
-          <meshStandardMaterial color="#dc2626" />
-        </Sphere>
-      </Float>
-      <Float speed={1.8} rotationIntensity={0.4} floatIntensity={0.6}>
-        <Box args={[0.5, 0.8, 0.5]} position={[0, -1, 1]}>
-          <meshStandardMaterial color="#16a34a" />
-        </Box>
-      </Float>
-    </group>
-  );
-};
 
 const GenerateRecipe = () => {
   const { user, profile } = useAuth();
@@ -119,16 +95,6 @@ const GenerateRecipe = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-orange-50 p-4 relative overflow-hidden">
-      {/* 3D Background Animation */}
-      <div className="absolute inset-0 pointer-events-none opacity-20">
-        <Canvas camera={{ position: [0, 0, 8] }}>
-          <ambientLight intensity={0.5} />
-          <pointLight position={[10, 10, 10]} />
-          <FloatingKitchen />
-          <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={1} />
-        </Canvas>
-      </div>
-
       <div className="max-w-4xl mx-auto relative z-10">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2 transform hover:scale-105 transition-transform duration-300 bg-gradient-to-r from-green-600 to-orange-600 bg-clip-text text-transparent">
@@ -138,8 +104,8 @@ const GenerateRecipe = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Generation Form with 3D Effects */}
-          <Card className="transform hover:scale-105 hover:rotate-1 transition-all duration-500 shadow-xl hover:shadow-2xl" style={{ transformStyle: 'preserve-3d' }}>
+          {/* Generation Form */}
+          <Card className="transform hover:scale-105 transition-all duration-500 shadow-xl hover:shadow-2xl">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <ChefHat className="w-5 h-5 text-green-600 animate-pulse" />
@@ -239,9 +205,9 @@ const GenerateRecipe = () => {
             </CardContent>
           </Card>
 
-          {/* Generated Recipe with 3D Effects */}
+          {/* Generated Recipe */}
           {generatedRecipe && (
-            <Card className="transform hover:scale-105 hover:rotate-1 transition-all duration-500 shadow-xl hover:shadow-2xl" style={{ transformStyle: 'preserve-3d' }}>
+            <Card className="transform hover:scale-105 transition-all duration-500 shadow-xl hover:shadow-2xl">
               <CardHeader>
                 <CardTitle className="text-xl">{generatedRecipe.title}</CardTitle>
                 <CardDescription>{generatedRecipe.description}</CardDescription>
