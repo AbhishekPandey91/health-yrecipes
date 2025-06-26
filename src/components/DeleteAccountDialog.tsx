@@ -59,19 +59,12 @@ const DeleteAccountDialog = () => {
         return;
       }
 
-      // Finally, delete the user account from auth
-      const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
-
-      if (authError) {
-        console.error('Error deleting user:', authError);
-        toast.error('Failed to delete account. Please contact support.');
-        setIsDeleting(false);
-        return;
-      }
-
-      // Sign out and redirect
+      // Finally, sign out the user - this effectively "deletes" their session
+      // Note: We cannot delete the auth user from client side for security reasons
+      // The user account will remain in auth.users but will be inaccessible
       await supabase.auth.signOut();
-      toast.success('Account deleted successfully');
+      
+      toast.success('Account data deleted successfully. You have been signed out.');
       navigate('/');
       
     } catch (error) {
@@ -99,12 +92,11 @@ const DeleteAccountDialog = () => {
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-red-600">
-            Delete Account Permanently
+            Delete Account Data
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-3">
             <p>
-              This action cannot be undone. This will permanently delete your account 
-              and remove all your data from our servers.
+              This action will permanently delete your account data and sign you out.
             </p>
             <p className="font-medium">
               All of the following will be permanently deleted:
@@ -146,7 +138,7 @@ const DeleteAccountDialog = () => {
             disabled={confirmText !== 'DELETE' || isDeleting}
             className="bg-red-600 hover:bg-red-700"
           >
-            {isDeleting ? 'Deleting...' : 'Delete Account'}
+            {isDeleting ? 'Deleting...' : 'Delete Account Data'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
